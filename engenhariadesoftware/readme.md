@@ -1,4 +1,4 @@
-# Engenharia de Software
+# Atividade 01
 ## 1. Comentário sobre o primeiro trecho do livro Software Engineering at Google, Oreilly 
 O trecho diferencia bem programação (escrever código) de engenharia de software (práticas e teoria pra construir um software mais confiável). Faz a comparação com engenharias tradicionais pra dizer que quando o erro pode matar ou quebrar coisas físicas, as regras são rígidas; software ainda vive numa zona cinza. Na minha opinião, especialmente no Brasil, tem muita confusão entre nomes e responsabilidades (Ciências da Computação, Sistemas de Informação, Engenharia da Computação, etc.), e isso acaba deixando a profissão menos regulamentada e mais “informal”.
 
