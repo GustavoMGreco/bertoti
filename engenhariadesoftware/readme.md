@@ -279,3 +279,199 @@ class BibliotecaTest {
     }
 }
 ```
+
+## 7. Diagramas de Classes UML
+<img width="862" height="203" alt="image" src="https://github.com/user-attachments/assets/1a338d47-c323-4f70-ac45-97f257f86ea1" />
+
+## 8. Código Java
+```Java
+package Main;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+public class Departamento {
+
+    private String nome;
+    private List<Funcionario> funcionarios = new ArrayList<>();
+
+    public Departamento(String nome) {
+        if (nome == null || nome.trim().isEmpty()) {
+            throw new IllegalArgumentException("Nome do departamento não pode ser nulo ou vazio.");
+        }
+        this.nome = nome;
+    }
+
+    public void adicionarFuncionario(Funcionario funcionario) {
+        if (funcionario == null) {
+            throw new IllegalArgumentException("Funcionário não pode ser nulo.");
+        }
+
+        if (funcionario.getDepartamento() != null) {
+            throw new IllegalStateException("O funcionário '" + funcionario.getNome() +
+                    "' já pertence ao departamento '" + funcionario.getDepartamento().getNome() + "'.");
+        }
+
+        this.funcionarios.add(funcionario);
+
+        funcionario.setDepartamento(this);
+    }
+
+    public void removerFuncionario(Funcionario funcionario) {
+        if (funcionario == null) {
+            throw new IllegalArgumentException("Funcionário não pode ser nulo.");
+        }
+
+        if (this.funcionarios.remove(funcionario)) {
+            funcionario.setDepartamento(null);
+        }
+    }
+
+    public String getNome() {
+        return nome;
+    }
+
+    public List<Funcionario> getFuncionarios() {
+        return Collections.unmodifiableList(funcionarios);
+    }
+}
+```
+
+```Java
+package Main;
+
+public class Funcionario {
+
+    private String nome;
+    private String cargo;
+
+    private Departamento departamento;
+
+    public Funcionario(String nome, String cargo) {
+        if (nome == null || nome.trim().isEmpty()) {
+            throw new IllegalArgumentException("Nome do funcionário não pode ser nulo ou vazio.");
+        }
+        if (cargo == null || cargo.trim().isEmpty()) {
+            throw new IllegalArgumentException("Cargo não pode ser nulo ou vazio.");
+        }
+        this.nome = nome;
+        this.cargo = cargo;
+    }
+
+    public String getNome() {
+        return nome;
+    }
+
+    public String getCargo() {
+        return cargo;
+    }
+
+    public Departamento getDepartamento() {
+        return departamento;
+    }
+
+    void setDepartamento(Departamento departamento) {
+        this.departamento = departamento;
+    }
+}
+```
+
+## 9. Testes Automatizados
+```Java
+package Test;
+
+import Main.Departamento;
+import Main.Funcionario;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+class DepartamentoFuncionarioRelationshipTest {
+
+    private Departamento departamento;
+    private Funcionario func1;
+    private Funcionario func2;
+
+    @BeforeEach
+    void setUp() {
+        departamento = new Departamento("Engenharia");
+        func1 = new Funcionario("Ana", "Engenheira de Software Sênior");
+        func2 = new Funcionario("Bruno", "Estagiário");
+    }
+
+    @Test
+    void deveAdicionarFuncionarioCorretamente() {
+        departamento.adicionarFuncionario(func1);
+
+        assertEquals(1, departamento.getFuncionarios().size());
+        assertTrue(departamento.getFuncionarios().contains(func1));
+
+        assertEquals(departamento, func1.getDepartamento());
+    }
+
+    @Test
+    void deveAdicionarMultiplosFuncionarios() {
+        departamento.adicionarFuncionario(func1);
+        departamento.adicionarFuncionario(func2);
+
+        assertEquals(2, departamento.getFuncionarios().size());
+        assertTrue(departamento.getFuncionarios().containsAll(List.of(func1, func2)));
+        assertEquals(departamento, func1.getDepartamento());
+        assertEquals(departamento, func2.getDepartamento());
+    }
+
+    @Test
+    void deveRemoverFuncionarioCorretamente() {
+        departamento.adicionarFuncionario(func1);
+        assertEquals(1, departamento.getFuncionarios().size());
+
+        departamento.removerFuncionario(func1);
+
+        assertEquals(0, departamento.getFuncionarios().size());
+        assertFalse(departamento.getFuncionarios().contains(func1));
+
+        assertNull(func1.getDepartamento());
+    }
+
+    @Test
+    void naoDeveAdicionarFuncionarioQueJaPertenceAOutroDepartamento() {
+        Departamento outroDepartamento = new Departamento("Vendas");
+        outroDepartamento.adicionarFuncionario(func1);
+
+        IllegalStateException exception = assertThrows(IllegalStateException.class, () -> {
+            departamento.adicionarFuncionario(func1);
+        });
+
+        assertTrue(exception.getMessage().contains("já pertence ao departamento 'Vendas'"));
+
+        assertEquals(0, departamento.getFuncionarios().size());
+        assertEquals(1, outroDepartamento.getFuncionarios().size());
+        assertEquals(outroDepartamento, func1.getDepartamento());
+    }
+
+    @Test
+    void deveLancarExcecaoAoAdicionarFuncionarioNulo() {
+        assertThrows(IllegalArgumentException.class, () -> {
+            departamento.adicionarFuncionario(null);
+        });
+    }
+
+    @Test
+    void deveLancarExcecaoAoCriarDepartamentoComNomeNulo() {
+        assertThrows(IllegalArgumentException.class, () -> {
+            new Departamento(null);
+        });
+    }
+
+    @Test
+    void deveLancarExcecaoAoCriarFuncionarioComCargoVazio() {
+        assertThrows(IllegalArgumentException.class, () -> {
+            new Funcionario("Carlos", "   ");
+        });
+    }
+}
+```
